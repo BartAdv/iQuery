@@ -98,18 +98,18 @@ setText : Element -> String -> IO ()
 setText (MkElem e) s =
   mkForeign (FFun "%0.textContent=%1" [FPtr, FString] FUnit) e s
 
-onEvent : EventType -> Element -> (Event -> IO Int) -> IO ()
-onEvent ty (MkElem e) cb =
-  let ev = show ty in
+onEvent : { et : EventType } -> Element -> (Event et -> IO Int) -> IO ()
+onEvent {et} (MkElem e) cb =
+  let ev = show et in
       mkForeign (
         FFun "%0.addEventListener(%1, %2)" [ FPtr
                                            , FString
-                                           , FFunction (FAny Event) (FAny (IO Int))
+                                           , FFunction (FAny (Event et)) (FAny (IO Int))
                                            ] FUnit
       ) e ev cb
 
-onClick : Element -> (Event -> IO Int) -> IO ()
-onClick = onEvent Click
+onClick : Element -> (Event Click -> IO Int) -> IO ()
+onClick = onEvent { et = Click }
 
 length : NodeList -> IO Int
 length (MkNodeList l) =
@@ -129,5 +129,3 @@ query q =
 childNodes : Element -> IO NodeList
 childNodes (MkElem e) =
   map MkNodeList $ mkForeign (FFun "%0.childNodes" [FPtr] FPtr) e
-
-
